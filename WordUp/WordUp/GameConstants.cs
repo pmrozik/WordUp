@@ -11,8 +11,6 @@ namespace WordUp
         public const int WINDOW_WIDTH = 800;
         public const int WINDOW_HEIGHT = 600;
 
-       
-        
         // speed constants
 
         public const float VERY_SLOW_INTERVAL = 0.1f;

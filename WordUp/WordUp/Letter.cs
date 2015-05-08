@@ -18,6 +18,7 @@ namespace WordUp
         private TimeSpan elapsedFrameTime;
         private GameSpeed gameSpeed;
         private bool gameSpeedChanged;
+        private bool offScreen;
         private long letterFallSpeed;
         Vector2 velocity;
         
@@ -29,9 +30,9 @@ namespace WordUp
             this.c = c;
             this.texture = texture;
             drawRectangle = new Rectangle(x, y, texture.Width / 5, texture.Height / 5);
-            gameSpeed = GameSpeed.VERY_SLOW;
+            gameSpeed = GameSpeed.VERY_FAST;
             gameSpeedChanged = true;
-            velocity = new Vector2(0, 0.3f);
+            velocity = new Vector2(0, GameConstants.VERY_SLOW_INTERVAL);
         }
         public void Draw(SpriteBatch spriteBatch)
         {
@@ -69,23 +70,11 @@ namespace WordUp
                
             }
             
-            /*
-            if(elapsedFrameTime >= TimeSpan.FromTicks(letterFallSpeed))
-            {
-                drawRectangle.Y += 1;
-
-                if (drawRectangle.Y > GameConstants.WINDOW_HEIGHT)
-                {
-                    drawRectangle.Y = 0;
-                }
-                elapsedFrameTime = TimeSpan.Zero;
-            }
-             */
-
             drawRectangle.Y += (int)(velocity.Y * gameTime.ElapsedGameTime.TotalMilliseconds);
 
             if (drawRectangle.Y > GameConstants.WINDOW_HEIGHT)
             {
+                offScreen = true;
                 drawRectangle.Y = 0;
             }
             
@@ -145,6 +134,13 @@ namespace WordUp
                 return drawRectangle;
             }
     
+        }
+        public bool OffScreen
+        {
+            get
+            {
+                return offScreen;
+            }
         }
     }
 }

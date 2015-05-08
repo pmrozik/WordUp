@@ -23,9 +23,13 @@ namespace WordUp
         
         String currentWord;
         Dictionary<char, Texture2D> letterDictionary = new Dictionary<char, Texture2D>();
+        
+        // main word combo dictionary
+        Dictionary<string, List<string>> wordComboDictionary = new Dictionary<string, List<string>>();
+        
         List<Letter> wordLetterList = new List<Letter>();
 
-        GameSpeed gameSpeed = GameSpeed.VERY_SLOW;
+        GameSpeed gameSpeed = GameSpeed.VERY_FAST;
         bool gameSpeedChanged = false;
         bool keyDownPressed = false;
 
@@ -34,6 +38,7 @@ namespace WordUp
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            
 
 
             // set resolution
@@ -63,6 +68,48 @@ namespace WordUp
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            // Load word list file
+
+            try
+            {
+                Stream wordComboStream = TitleContainer.OpenStream( "wordcombo.txt");
+                StreamReader stream = new StreamReader(wordComboStream);
+                string line;
+                // use StreamReader.ReadLine or other methods to read the file data
+                Debug.Write("Loading dictionary...");
+                while((line = stream.ReadLine()) != null)
+                {
+                    // Parse
+                    
+                    string[] colonSplit = line.Split(':');
+
+                    string wordCombo = colonSplit[0];
+                    string rightSide = colonSplit[1];
+
+                    string[] commaSplit = rightSide.Split(',');
+
+                    List<String> tmpWordList = new List<String>();
+
+       
+                    for(int i = 0; i < commaSplit.Length; i++)
+                    {
+                        tmpWordList.Add(commaSplit[i]);
+                    }
+                    wordComboDictionary.Add(wordCombo, tmpWordList);
+
+                    tmpWordList = null;
+                }
+
+                Debug.WriteLine("done.");
+                stream.Close();
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                // this will be thrown by OpenStream if gamedata.txt
+                // doesn't exist in the title storage location
+            }
+
+            
             // Load letter textures
             for (char c = 'a'; c <= 'z'; c++)
             {
@@ -70,7 +117,7 @@ namespace WordUp
                 letterDictionary.Add(c,  Content.Load<Texture2D>(c + "black_1"));
             }
 
-            currentWord = "unbelievable";
+            currentWord = GetRandomWordCombo();
             stringToList(currentWord);
 
             /*
@@ -89,22 +136,35 @@ namespace WordUp
                 }
             }  
              */
-             
-
-             
-            
 
             // TODO: use this.Content to load your game content here
         }
         private void stringToList(String word)
         {
-            int xLoc = 10;
+            // center letters on screen
+
+            int letterWidth = letterDictionary[word[0]].Width;
+
+            Debug.WriteLine("Window width: " + GameConstants.WINDOW_WIDTH);
+            int wordPixels =  (word.Length * (letterWidth / 5)) + (word.Length * letterWidth/20);
+            Debug.WriteLine("Word Pixels: " + wordPixels);
+
+            int xLoc = (GameConstants.WINDOW_WIDTH - wordPixels) / 2;
+             
+            wordLetterList.Clear();
 
             foreach(char c in word)
             {
+ 
                 wordLetterList.Add(new Letter(c, xLoc, 0, letterDictionary[c]));
                 xLoc += (letterDictionary[c].Width / 4);
             }
+        }
+        private string GetRandomWordCombo()
+        {
+            Random rand = new Random();
+
+            return wordComboDictionary.ElementAt(rand.Next(0, wordComboDictionary.Count)).Key;
         }
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -159,9 +219,21 @@ namespace WordUp
 
             // TODO: Add your update logic here
 
+            bool offScreen = false;
+
             foreach(Letter letter in wordLetterList)
             {
+                if(letter.OffScreen)
+                {
+                    offScreen = true;
+                }
                 letter.Update(gameTime);
+            }
+
+            if(offScreen)
+            {
+                currentWord = GetRandomWordCombo();
+                stringToList(currentWord);
             }
 
             base.Update(gameTime);
