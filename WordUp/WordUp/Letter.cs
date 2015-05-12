@@ -29,8 +29,8 @@ namespace WordUp
         {
             this.c = c;
             this.texture = texture;
-            drawRectangle = new Rectangle(x, y, texture.Width / 5, texture.Height / 5);
-            gameSpeed = GameSpeed.VERY_FAST;
+            drawRectangle = new Rectangle(x, y, texture.Width, texture.Height);
+            gameSpeed = GameSpeed.NORMAL;
             gameSpeedChanged = true;
             velocity = new Vector2(0, GameConstants.VERY_SLOW_INTERVAL);
         }

@@ -22,7 +22,7 @@ namespace WordUp
         SpriteBatch spriteBatch;
         
         String currentWord;
-        Dictionary<char, Texture2D> letterDictionary = new Dictionary<char, Texture2D>();
+        Dictionary<char, List<Texture2D>> letterDictionary = new Dictionary<char, List<Texture2D>>();
         
         // main word combo dictionary
         Dictionary<string, List<string>> wordComboDictionary = new Dictionary<string, List<string>>();
@@ -32,6 +32,8 @@ namespace WordUp
         GameSpeed gameSpeed = GameSpeed.VERY_FAST;
         bool gameSpeedChanged = false;
         bool keyDownPressed = false;
+
+        Random randTest = new Random();
 
 
         public Game1()
@@ -111,10 +113,26 @@ namespace WordUp
 
             
             // Load letter textures
+
+            List<Texture2D> textureList; 
+
             for (char c = 'a'; c <= 'z'; c++)
             {
-
-                letterDictionary.Add(c,  Content.Load<Texture2D>(c + "black_1"));
+                textureList = new List<Texture2D>(10);
+                textureList.Add(Content.Load<Texture2D>("letters\\64\\" + c + "_black"));
+                textureList.Add(Content.Load<Texture2D>("letters\\64\\" + c + "_blue"));
+                textureList.Add(Content.Load<Texture2D>("letters\\64\\" + c + "_dg"));
+                textureList.Add(Content.Load<Texture2D>("letters\\64\\" + c + "_gold"));
+                textureList.Add(Content.Load<Texture2D>("letters\\64\\" + c + "_grey"));
+                textureList.Add(Content.Load<Texture2D>("letters\\64\\" + c + "_lg"));
+                textureList.Add(Content.Load<Texture2D>("letters\\64\\" + c + "_orange"));
+                textureList.Add(Content.Load<Texture2D>("letters\\64\\" + c + "_pink"));
+                textureList.Add(Content.Load<Texture2D>("letters\\64\\" + c + "_red"));
+                textureList.Add(Content.Load<Texture2D>("letters\\64\\" + c + "_violet"));
+               
+                letterDictionary.Add(c,  textureList);
+                textureList = null;
+                
             }
 
             currentWord = GetRandomWordCombo();
@@ -143,7 +161,7 @@ namespace WordUp
         {
             // center letters on screen
 
-            int letterWidth = letterDictionary[word[0]].Width;
+            int letterWidth = letterDictionary[word[0]][0].Width;
 
             Debug.WriteLine("Window width: " + GameConstants.WINDOW_WIDTH);
             int wordPixels =  (word.Length * (letterWidth / 5)) + (word.Length * letterWidth/20);
@@ -153,18 +171,26 @@ namespace WordUp
              
             wordLetterList.Clear();
 
+            Texture2D tmpTexture;
+
             foreach(char c in word)
             {
- 
-                wordLetterList.Add(new Letter(c, xLoc, 0, letterDictionary[c]));
-                xLoc += (letterDictionary[c].Width / 4);
+                // retrieves random color
+                tmpTexture = GetRandomLetterTexture(c);
+                wordLetterList.Add(new Letter(c, xLoc, 0, tmpTexture));
+                xLoc += tmpTexture.Width;
             }
         }
         private string GetRandomWordCombo()
         {
             Random rand = new Random();
 
-            return wordComboDictionary.ElementAt(rand.Next(0, wordComboDictionary.Count)).Key;
+            return wordComboDictionary.ElementAt(randTest.Next(0, wordComboDictionary.Count)).Key;
+        }
+        private Texture2D GetRandomLetterTexture(char c)
+        {
+            
+            return letterDictionary[c][randTest.Next(0, 10)];
         }
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
