@@ -14,7 +14,9 @@ using System.Diagnostics;
 namespace WordUp
 {
     /// <summary>
-    /// This is the main type for your game
+    /// WordUp Game.
+    /// Designed and created by Pawel Mrozik.
+    /// pmrozik@gmail.com
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
@@ -22,18 +24,27 @@ namespace WordUp
         SpriteBatch spriteBatch;
         
         String currentWord;
+
+        // Game dashboard
+        private Texture2D blackRectangleTexture;
+        private Rectangle blackRectangle;
+  
+        // Allows letter graphics retrieval
         Dictionary<char, List<Texture2D>> letterDictionary = new Dictionary<char, List<Texture2D>>();
         
-        // main word combo dictionary
+        // Main word combo dictionary
         Dictionary<string, List<string>> wordComboDictionary = new Dictionary<string, List<string>>();
         
+        // Contains each letter of the word
         List<Letter> wordLetterList = new List<Letter>();
 
-        GameSpeed gameSpeed = GameSpeed.VERY_FAST;
-        bool gameSpeedChanged = false;
+        // Initial game speed
+        GameSpeed gameSpeed = GameSpeed.VERY_SLOW;
+        
         bool keyDownPressed = false;
 
-        Random randTest = new Random();
+        // Random seed for the game
+        Random rand = new Random();
 
 
         public Game1()
@@ -41,7 +52,6 @@ namespace WordUp
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             
-
 
             // set resolution
             graphics.PreferredBackBufferWidth = GameConstants.WINDOW_WIDTH;
@@ -70,14 +80,21 @@ namespace WordUp
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // Load word list file
+            // Dashboard items
 
+            blackRectangleTexture = new Texture2D(graphics.GraphicsDevice, 1, 1);
+            blackRectangleTexture.SetData(new[] { Color.Navy });
+            blackRectangle = new Rectangle(0, GameConstants.WINDOW_HEIGHT - GameConstants.DASHBOARD_HEIGHT,
+                                             GameConstants.DASHBOARD_WIDTH, GameConstants.DASHBOARD_HEIGHT);
+
+            // Load word list file
             try
             {
                 Stream wordComboStream = TitleContainer.OpenStream( "wordcombo.txt");
                 StreamReader stream = new StreamReader(wordComboStream);
                 string line;
-                // use StreamReader.ReadLine or other methods to read the file data
+                
+                // Read letter combination file data
                 Debug.Write("Loading dictionary...");
                 while((line = stream.ReadLine()) != null)
                 {
@@ -113,7 +130,6 @@ namespace WordUp
 
             
             // Load letter textures
-
             List<Texture2D> textureList; 
 
             for (char c = 'a'; c <= 'z'; c++)
@@ -132,7 +148,6 @@ namespace WordUp
                
                 letterDictionary.Add(c,  textureList);
                 textureList = null;
-                
             }
 
             currentWord = GetRandomWordCombo();
@@ -159,14 +174,13 @@ namespace WordUp
         }
         private void stringToList(String word)
         {
-            // center letters on screen
-
+            // letter width, assumes all letters on list are the exact same size
             int letterWidth = letterDictionary[word[0]][0].Width;
 
-            Debug.WriteLine("Window width: " + GameConstants.WINDOW_WIDTH);
-            int wordPixels =  (word.Length * (letterWidth / 5)) + (word.Length * letterWidth/20);
-            Debug.WriteLine("Word Pixels: " + wordPixels);
+            // total length in pixels of the letters displayed
+            int wordPixels = (word.Length * letterWidth);
 
+            // calculate initial location of the first letter so that letters are centered on screen
             int xLoc = (GameConstants.WINDOW_WIDTH - wordPixels) / 2;
              
             wordLetterList.Clear();
@@ -177,7 +191,7 @@ namespace WordUp
             {
                 // retrieves random color
                 tmpTexture = GetRandomLetterTexture(c);
-                wordLetterList.Add(new Letter(c, xLoc, 0, tmpTexture));
+                wordLetterList.Add(new Letter(c, xLoc, 0, tmpTexture, gameSpeed));
                 xLoc += tmpTexture.Width;
             }
         }
@@ -185,12 +199,16 @@ namespace WordUp
         {
             Random rand = new Random();
 
-            return wordComboDictionary.ElementAt(randTest.Next(0, wordComboDictionary.Count)).Key;
+            return wordComboDictionary.ElementAt(rand.Next(0, wordComboDictionary.Count)).Key;
         }
+        /// <summary>
+        /// Retrieves random color of letter texture. 
+        /// </summary>
+        /// <param name="c">letter from a to z</param>
+        /// <returns></returns>
         private Texture2D GetRandomLetterTexture(char c)
-        {
-            
-            return letterDictionary[c][randTest.Next(0, 10)];
+        { 
+            return letterDictionary[c][rand.Next(0, 10)];
         }
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -213,6 +231,15 @@ namespace WordUp
                 this.Exit();
 
             KeyboardState keyboard = Keyboard.GetState();
+
+            // Allows user to enter words
+
+            if(keyboard.)
+
+
+            // Allows user to change the speed of the game via keyboard
+
+            
 
             if(keyboard.IsKeyDown(Keys.Up))
             {
@@ -241,14 +268,12 @@ namespace WordUp
                     Debug.WriteLine("Game speed changed to " + gameSpeed.ToString());
                 } 
            }
-      
-
-            // TODO: Add your update logic here
 
             bool offScreen = false;
 
             foreach(Letter letter in wordLetterList)
             {
+                
                 if(letter.OffScreen)
                 {
                     offScreen = true;
@@ -261,6 +286,7 @@ namespace WordUp
                 currentWord = GetRandomWordCombo();
                 stringToList(currentWord);
             }
+            
 
             base.Update(gameTime);
         }
@@ -271,11 +297,17 @@ namespace WordUp
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.DarkGray);
 
-            spriteBatch.Begin();
+
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
             // TODO: Add your drawing code here
-            
+    
+            // Draw game dashboard
+
+            spriteBatch.Draw(blackRectangleTexture, blackRectangle, null,
+                                             Color.Navy, 0.0f, Vector2.Zero, SpriteEffects.None, 0f);
+           
             foreach(Letter letter in wordLetterList)
             {
                 letter.Draw(spriteBatch);

@@ -10,58 +10,78 @@ using System.Diagnostics;
 
 namespace WordUp
 {
+    /// <summary>
+    /// This class represents a single letter in the game. 
+    /// </summary>
+
     class Letter
     {
+        // letter representation
         private char c;
         private Rectangle drawRectangle;
         private Texture2D texture;
-        private TimeSpan elapsedFrameTime;
+        
+        // speed of the falling letter
+        // velocity is updated via gameSpeed constants
+        
         private GameSpeed gameSpeed;
         private bool gameSpeedChanged;
-        private bool offScreen;
-        private long letterFallSpeed;
         Vector2 velocity;
         
+        // whether letter has gone off screen
+        private bool offScreen;
 
-
-        
-        public Letter(char c, int x, int y, Texture2D texture)
+        /// <summary>
+        ///  Initializes a new Letter object with the letter, x location, y location, texture, and initial speed
+        /// </summary>
+        /// <param name="c">represents a single letter of the alphabet</param>
+        /// <param name="x">x location</param>
+        /// <param name="y">y location</param>
+        /// <param name="texture">texture for the letter</param>
+        /// <param name="gameSpeed">game speed represented by GameSpeed constants</param>
+        public Letter(char c, int x, int y, Texture2D texture, GameSpeed gameSpeed)
         {
             this.c = c;
             this.texture = texture;
             drawRectangle = new Rectangle(x, y, texture.Width, texture.Height);
-            gameSpeed = GameSpeed.NORMAL;
+            
+            // Starting speed
+            this.gameSpeed = gameSpeed;
             gameSpeedChanged = true;
-            velocity = new Vector2(0, GameConstants.VERY_SLOW_INTERVAL);
+            velocity = new Vector2(0, GameConstants.VERY_SLOW);
         }
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, drawRectangle, Color.White);
+            spriteBatch.Draw(texture, drawRectangle, null, Color.White, 0.0f, Vector2.Zero, SpriteEffects.None, 1f);
         }
+        /// <summary>
+        /// Letter logic for updating the letter during gameplay
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void Update(GameTime gameTime)
         {
-           
+            // Change game speed if necessary
             if(gameSpeedChanged)
             {
                 switch(gameSpeed)
                 {
                     case GameSpeed.VERY_SLOW:
-                        velocity.Y = GameConstants.VERY_SLOW_INTERVAL;
+                        velocity.Y = GameConstants.VERY_SLOW;
                         break;
                     case GameSpeed.SLOW:
-                        velocity.Y = GameConstants.SLOW_INTERVAL;
+                        velocity.Y = GameConstants.SLOW;
                         break;
                     case GameSpeed.NORMAL:
-                        velocity.Y = GameConstants.NORMAL_INTERVAL;
+                        velocity.Y = GameConstants.NORMAL;
                         break;
                     case GameSpeed.FAST:
-                        velocity.Y = GameConstants.FAST_INTERVAL;
+                        velocity.Y = GameConstants.FAST;
                         break;
                     case GameSpeed.VERY_FAST:
-                        velocity.Y = GameConstants.VERY_FAST_INTERVAL;
+                        velocity.Y = GameConstants.VERY_FAST;
                         break;
                     case GameSpeed.ULTRA_FAST:
-                        velocity.Y = GameConstants.ULTRA_FAST_INTERVAL;
+                        velocity.Y = GameConstants.ULTRA_FAST;
                         break;
                     default:
                         break;
@@ -70,15 +90,20 @@ namespace WordUp
                
             }
             
+            // Update letter location
             drawRectangle.Y += (int)(velocity.Y * gameTime.ElapsedGameTime.TotalMilliseconds);
 
-            if (drawRectangle.Y > GameConstants.WINDOW_HEIGHT)
+            // Check whether letter has gone off screen
+            if (drawRectangle.Y > (GameConstants.WINDOW_HEIGHT - GameConstants.DASHBOARD_HEIGHT))
             {
                 offScreen = true;
                 drawRectangle.Y = 0;
             }
             
         }
+        /// <summary>
+        /// Allows the user to get and set the game speed using a GameSpeed constant
+        /// </summary>
         public GameSpeed Speed
         {
             get
@@ -91,6 +116,9 @@ namespace WordUp
                 gameSpeed = value; 
             }
         }
+        /// <summary>
+        /// Allows user to access the character representation of the letter
+        /// </summary>
         public char Character
         {
             get
@@ -98,6 +126,9 @@ namespace WordUp
                 return c;
             }
         }
+        /// <summary>
+        /// Allows user to change X location of the letter
+        /// </summary>
         public int X
         {
             get
@@ -109,6 +140,9 @@ namespace WordUp
                 drawRectangle.X = value;
             }
         }
+        /// <summary>
+        /// Allows user to change y location of the letter
+        /// </summary>
         public int Y
         {
             get
@@ -120,6 +154,9 @@ namespace WordUp
                 drawRectangle.Y = value;
             }
         }
+        /// <summary>
+        /// Allows user to change the letter image
+        /// </summary>
         public Texture2D Texture
         {
             set
@@ -127,6 +164,9 @@ namespace WordUp
                 texture = value;
             }
         }
+        /// <summary>
+        /// Returns the draw rectangle
+        /// </summary>
         public Rectangle DrawRectangle
         {
             get
@@ -135,6 +175,9 @@ namespace WordUp
             }
     
         }
+        /// <summary>
+        /// Returns information on whether the letter has gone off screen
+        /// </summary>
         public bool OffScreen
         {
             get
