@@ -29,11 +29,14 @@ namespace WordUp
         public const float VERY_FAST = 0.3f;
 
         public const float ULTRA_FAST = 0.35f;
-
+       
         // Dashboard sizes
 
         public const int DASHBOARD_WIDTH = WINDOW_WIDTH;
         public const int DASHBOARD_HEIGHT = 60;
+
+        // Font sizes in pixels
+        public const int ARIAL20_PIXELS = 15;
 
     }
     

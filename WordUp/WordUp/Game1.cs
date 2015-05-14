@@ -28,6 +28,13 @@ namespace WordUp
         // Game dashboard
         private Texture2D blackRectangleTexture;
         private Rectangle blackRectangle;
+        private bool rectangleDrawn = false;
+
+        // Holds letters typed by user
+        List<char> typedLetters = new List<char>();
+
+        // Fonts
+        SpriteFont arialFont;
   
         // Allows letter graphics retrieval
         Dictionary<char, List<Texture2D>> letterDictionary = new Dictionary<char, List<Texture2D>>();
@@ -42,6 +49,7 @@ namespace WordUp
         GameSpeed gameSpeed = GameSpeed.VERY_SLOW;
         
         bool keyDownPressed = false;
+        bool backspaceDown = false;
 
         // Random seed for the game
         Random rand = new Random();
@@ -86,6 +94,10 @@ namespace WordUp
             blackRectangleTexture.SetData(new[] { Color.Navy });
             blackRectangle = new Rectangle(0, GameConstants.WINDOW_HEIGHT - GameConstants.DASHBOARD_HEIGHT,
                                              GameConstants.DASHBOARD_WIDTH, GameConstants.DASHBOARD_HEIGHT);
+
+            // Load fonts
+
+            arialFont = Content.Load<SpriteFont>("fonts\\Arial20");
 
             // Load word list file
             try
@@ -172,6 +184,18 @@ namespace WordUp
 
             // TODO: use this.Content to load your game content here
         }
+        private string ListToString()
+        {
+            string wordString = string.Empty;
+            
+            foreach(char c in typedLetters)
+            {
+                wordString += c;
+                
+            }
+            Debug.WriteLine(wordString);
+            return wordString;
+        }
         private void stringToList(String word)
         {
             // letter width, assumes all letters on list are the exact same size
@@ -234,12 +258,29 @@ namespace WordUp
 
             // Allows user to enter words
 
-            if(keyboard.)
+            char pressedChar = KeyboardProcessor.GetLetter(keyboard);
+            if(pressedChar != ' ')
+            {
+                Debug.WriteLine("Pressed " + pressedChar);
+                typedLetters.Add(pressedChar);
+               
+            }
 
-
-            // Allows user to change the speed of the game via keyboard
-
+            // Clear current letters with backspace
+            if(keyboard.IsKeyDown(Keys.Back))
+            {
+                backspaceDown = true;
+            }
+            if(backspaceDown)
+            {
+                if(keyboard.IsKeyUp(Keys.Back))
+                {
+                    typedLetters.Clear();
+                    backspaceDown = false;
+                }
+            }
             
+            // Allows user to change the speed of the game via keyboard
 
             if(keyboard.IsKeyDown(Keys.Up))
             {
@@ -286,7 +327,6 @@ namespace WordUp
                 currentWord = GetRandomWordCombo();
                 stringToList(currentWord);
             }
-            
 
             base.Update(gameTime);
         }
@@ -299,20 +339,33 @@ namespace WordUp
         {
             GraphicsDevice.Clear(Color.DarkGray);
 
+            
 
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
             // TODO: Add your drawing code here
     
             // Draw game dashboard
 
-            spriteBatch.Draw(blackRectangleTexture, blackRectangle, null,
-                                             Color.Navy, 0.0f, Vector2.Zero, SpriteEffects.None, 0f);
-           
+            // Draw rectangle only once
+            if (!rectangleDrawn)
+            {
+                spriteBatch.Draw(blackRectangleTexture, blackRectangle, null,
+                                             Color.Navy, 0.0f, Vector2.Zero, SpriteEffects.None, 0.5f);
+            }
+            
+            // Draw typed letters
+
+            int typedLettersXLoc = (GameConstants.WINDOW_WIDTH - typedLetters.Count * GameConstants.ARIAL20_PIXELS) / 2;
+            spriteBatch.DrawString(arialFont, ListToString(), new Vector2(typedLettersXLoc, 550), Color.Yellow);
+            Debug.WriteLine("Drawing string at " + gameTime.TotalGameTime);
+
+            // Draw falling letters
             foreach(Letter letter in wordLetterList)
             {
                 letter.Draw(spriteBatch);
             }
 
+          
             spriteBatch.End();
             base.Draw(gameTime);
         }
