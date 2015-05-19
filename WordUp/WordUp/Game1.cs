@@ -61,6 +61,10 @@ namespace WordUp
 
         // Random seed for the game
         Random rand = new Random();
+        
+        // Game score
+        private int score;
+
 
 
         public Game1()
@@ -303,6 +307,7 @@ namespace WordUp
                 {
                     Debug.WriteLine("found.");
                     wordDictionary.Remove(word);
+                    
                 }
                 else 
                 {

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WordUp
 {
-    public static class StringTools
+    public static class ScoreTools
     {
         /// <summary>
         /// Calculate word score
@@ -19,6 +19,7 @@ namespace WordUp
             char[] a = s.ToCharArray();
 
            // 2. Calculate score based on Scrabble (R) rules
+           // Source: www.hasbro.com/scrabble/en_US/discover/faq.cfm
            foreach(char c in s)
            {
                if (c == 'q' || c == 'z') { totalScore += 10; }
