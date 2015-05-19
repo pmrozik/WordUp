@@ -4636,7 +4636,6 @@ clutch
 clutter
 Clyde
 Clytemnestra
-CO
 co
 coach
 coachman
@@ -7911,7 +7910,6 @@ epilepsy
 epileptic
 epilogue
 epimorphism
-Epiphany
 epiphany
 epiphyseal
 epiphysis
@@ -12651,7 +12649,6 @@ Jason
 jasper
 jaundice
 jaunty
-Java
 java
 javelin
 jaw
@@ -14869,7 +14866,6 @@ mesquite
 mess
 message
 messenger
-Messiah
 messiah
 messianic
 messieurs

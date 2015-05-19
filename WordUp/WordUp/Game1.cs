@@ -193,8 +193,16 @@ namespace WordUp
                         {
                             lineOfText.Replace(".", "");
                         }
-                        wordDictionary.Add(lineOfText.Trim(), false);
-                        
+                        // Check if duplicates exist in the list that's being loaded
+                        lineOfText = lineOfText.ToLower().Trim();
+                        if(wordDictionary.ContainsKey(lineOfText))
+                        {
+                            // Don't add again
+                        }
+                        else
+                        { 
+                            wordDictionary.Add(lineOfText.ToLower().Trim(), false);
+                        }
                     }
                 }
             }
@@ -289,8 +297,15 @@ namespace WordUp
                 // Check whether the letter is one of the falling ones
                 if(currentWord.Contains(pressedChar.ToString()))
                 {
+                    
                     typedLetters.Add(pressedChar);
                 }
+                else
+                {
+                    Debug.WriteLine("Current word: {0}", currentWord);
+                    Debug.WriteLine("Current word doesn't have {0}", pressedChar);
+                }
+
                 
                
             }
