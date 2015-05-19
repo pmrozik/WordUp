@@ -14,7 +14,7 @@ namespace WordUp
     /// This class represents a single letter in the game. 
     /// </summary>
 
-    class Letter
+    class Letter 
     {
         // letter representation
         private char c;

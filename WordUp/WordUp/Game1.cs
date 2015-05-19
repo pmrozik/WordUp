@@ -42,14 +42,22 @@ namespace WordUp
         // Main word combo dictionary
         Dictionary<string, List<string>> wordComboDictionary = new Dictionary<string, List<string>>();
         
+        // Word dictionary
+        Dictionary<string, bool> wordDictionary = new Dictionary<string, bool>();
+
         // Contains each letter of the word
+
         List<Letter> wordLetterList = new List<Letter>();
+        
+        // This is set in LoadContent()
+        int letterWidth;
 
         // Initial game speed
         GameSpeed gameSpeed = GameSpeed.VERY_SLOW;
         
         bool keyDownPressed = false;
         bool backspaceDown = false;
+        bool enterDown = false;
 
         // Random seed for the game
         Random rand = new Random();
@@ -99,6 +107,8 @@ namespace WordUp
 
             arialFont = Content.Load<SpriteFont>("fonts\\Arial20");
 
+
+            /*
             // Load word list file
             try
             {
@@ -139,8 +149,7 @@ namespace WordUp
                 // this will be thrown by OpenStream if gamedata.txt
                 // doesn't exist in the title storage location
             }
-
-            
+            */
             // Load letter textures
             List<Texture2D> textureList; 
 
@@ -161,26 +170,32 @@ namespace WordUp
                 letterDictionary.Add(c,  textureList);
                 textureList = null;
             }
+            // Set the letter width 
+            letterWidth = letterDictionary['a'][0].Width;
 
-            currentWord = GetRandomWordCombo();
-            stringToList(currentWord);
-
-            /*
             // Load word list
 
             string lineOfText;
-            int i = 0;
+
             using (var stream = TitleContainer.OpenStream("words.txt"))
             {
                 using (var reader = new StreamReader(stream))
                 {
                     while ((lineOfText = reader.ReadLine()) != null)
                     {
-                        words[i++] = lineOfText;
+                        // Remove all periods from words
+                        if(lineOfText.Trim().Contains('.'))
+                        {
+                            lineOfText.Replace(".", "");
+                        }
+                        wordDictionary.Add(lineOfText.Trim(), false);
+                        
                     }
                 }
-            }  
-             */
+            }
+
+            currentWord = GetRandomLetterCombo();
+            stringToList(currentWord);
 
             // TODO: use this.Content to load your game content here
         }
@@ -193,14 +208,12 @@ namespace WordUp
                 wordString += c;
                 
             }
-            Debug.WriteLine(wordString);
+            
             return wordString;
         }
         private void stringToList(String word)
         {
-            // letter width, assumes all letters on list are the exact same size
-            int letterWidth = letterDictionary[word[0]][0].Width;
-
+           
             // total length in pixels of the letters displayed
             int wordPixels = (word.Length * letterWidth);
 
@@ -208,6 +221,9 @@ namespace WordUp
             int xLoc = (GameConstants.WINDOW_WIDTH - wordPixels) / 2;
              
             wordLetterList.Clear();
+
+            // convert word to lower case
+            word = word.ToLower();
 
             Texture2D tmpTexture;
 
@@ -218,12 +234,16 @@ namespace WordUp
                 wordLetterList.Add(new Letter(c, xLoc, 0, tmpTexture, gameSpeed));
                 xLoc += tmpTexture.Width;
             }
+            
         }
-        private string GetRandomWordCombo()
+        private string GetRandomLetterCombo()
         {
             Random rand = new Random();
 
-            return wordComboDictionary.ElementAt(rand.Next(0, wordComboDictionary.Count)).Key;
+            string tmpWord = wordDictionary.ElementAt(rand.Next(0, wordDictionary.Count)).Key;
+
+            return StringTools.Alphabetize(tmpWord);
+
         }
         /// <summary>
         /// Retrieves random color of letter texture. 
@@ -232,7 +252,7 @@ namespace WordUp
         /// <returns></returns>
         private Texture2D GetRandomLetterTexture(char c)
         { 
-            return letterDictionary[c][rand.Next(0, 10)];
+            return letterDictionary[c][rand.Next(0, 9)];
         }
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -261,9 +281,34 @@ namespace WordUp
             char pressedChar = KeyboardProcessor.GetLetter(keyboard);
             if(pressedChar != ' ')
             {
-                Debug.WriteLine("Pressed " + pressedChar);
                 typedLetters.Add(pressedChar);
                
+            }
+            // User presses enter, check if word exists in dictionary
+            if(typedLetters.Count > 0 && keyboard.IsKeyDown(Keys.Enter))
+            {
+                enterDown = true;
+            }
+            if(enterDown && keyboard.IsKeyUp(Keys.Enter))
+            {
+                string word = "";
+                
+                foreach(char c in typedLetters)
+                {
+                    word += c;
+                }
+                Debug.Write("Checking the following word: {0}...", word);
+
+                if(wordDictionary.ContainsKey(word))
+                {
+                    Debug.WriteLine("found.");
+                    wordDictionary.Remove(word);
+                }
+                else 
+                {
+                    Debug.WriteLine("not found.");
+                }
+                enterDown = false;
             }
 
             // Clear current letters with backspace
@@ -324,7 +369,7 @@ namespace WordUp
 
             if(offScreen)
             {
-                currentWord = GetRandomWordCombo();
+                currentWord = GetRandomLetterCombo();
                 stringToList(currentWord);
             }
 
@@ -357,7 +402,7 @@ namespace WordUp
 
             int typedLettersXLoc = (GameConstants.WINDOW_WIDTH - typedLetters.Count * GameConstants.ARIAL20_PIXELS) / 2;
             spriteBatch.DrawString(arialFont, ListToString(), new Vector2(typedLettersXLoc, 550), Color.Yellow);
-            Debug.WriteLine("Drawing string at " + gameTime.TotalGameTime);
+            
 
             // Draw falling letters
             foreach(Letter letter in wordLetterList)
