@@ -379,10 +379,15 @@ namespace WordUp
                 letter.Update(gameTime);
             }
 
+            // Check if letters have gone off screen
             if(offScreen)
             {
+                // 1. Get new word
                 currentWord = GetRandomLetterCombo();
+                // 2. Convert new word to list form
                 stringToList(currentWord);
+                // 3. Clear typed letters
+                typedLetters.Clear();
             }
 
             base.Update(gameTime);
