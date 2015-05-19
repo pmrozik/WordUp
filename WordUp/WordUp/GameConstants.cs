@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Microsoft.Xna.Framework;
+
 namespace WordUp
 {
     /// <summary>
@@ -38,6 +40,9 @@ namespace WordUp
         // Font sizes in pixels
         public const int ARIAL20_PIXELS = 15;
 
+        // Score location
+
+        public static readonly Vector2 SCORE_LOCATION = new Vector2(725, 25);
     }
     
 }

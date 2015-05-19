@@ -58,6 +58,7 @@ namespace WordUp
         bool keyDownPressed = false;
         bool backspaceDown = false;
         bool enterDown = false;
+        bool offScreen = false;
 
         // Random seed for the game
         Random rand = new Random();
@@ -312,9 +313,14 @@ namespace WordUp
                 if(wordDictionary.ContainsKey(word))
                 {
                     Debug.WriteLine("found.");
+                    // 1. Remove word from word dictionary
                     wordDictionary.Remove(word);
+                    // 2. Update score
                     score += ScoreTools.GetWordScore(word);
                     Debug.WriteLine("Total score: {0}", score);
+                    // 3. Clear current letters
+                    clearLetters();
+                    
                 }
                 else 
                 {
@@ -367,7 +373,7 @@ namespace WordUp
                 } 
            }
 
-            bool offScreen = false;
+            
 
             foreach(Letter letter in wordLetterList)
             {
@@ -382,17 +388,21 @@ namespace WordUp
             // Check if letters have gone off screen
             if(offScreen)
             {
-                // 1. Get new word
-                currentWord = GetRandomLetterCombo();
-                // 2. Convert new word to list form
-                stringToList(currentWord);
-                // 3. Clear typed letters
-                typedLetters.Clear();
+                clearLetters();
+                offScreen = false;
             }
 
             base.Update(gameTime);
         }
-
+        private void clearLetters()
+        {
+            // 1. Get new word
+            currentWord = GetRandomLetterCombo();
+            // 2. Convert new word to list form
+            stringToList(currentWord);
+            // 3. Clear typed letters
+            typedLetters.Clear();
+        }
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -400,8 +410,6 @@ namespace WordUp
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.DarkGray);
-
-            
 
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
             // TODO: Add your drawing code here
@@ -427,7 +435,11 @@ namespace WordUp
                 letter.Draw(spriteBatch);
             }
 
-          
+            // Draw score and health
+
+            spriteBatch.DrawString(arialFont, score.ToString(), GameConstants.SCORE_LOCATION, Color.Red);
+     
+
             spriteBatch.End();
             base.Draw(gameTime);
         }
