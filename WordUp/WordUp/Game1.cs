@@ -285,7 +285,12 @@ namespace WordUp
             char pressedChar = KeyboardProcessor.GetLetter(keyboard);
             if(pressedChar != ' ')
             {
-                typedLetters.Add(pressedChar);
+                // Check whether the letter is one of the falling ones
+                if(currentWord.Contains(pressedChar.ToString()))
+                {
+                    typedLetters.Add(pressedChar);
+                }
+                
                
             }
             // User presses enter, check if word exists in dictionary
@@ -301,13 +306,15 @@ namespace WordUp
                 {
                     word += c;
                 }
-                Debug.Write("Checking the following word: {0}...", word);
+                Debug.Write("Checking the following word: {0} ...", word);
 
+                // Check against dictionary - is typed word real?
                 if(wordDictionary.ContainsKey(word))
                 {
                     Debug.WriteLine("found.");
                     wordDictionary.Remove(word);
-                    
+                    score += ScoreTools.GetWordScore(word);
+                    Debug.WriteLine("Total score: {0}", score);
                 }
                 else 
                 {
