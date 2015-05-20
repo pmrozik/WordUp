@@ -43,6 +43,8 @@ namespace WordUp
         // Score location
 
         public static readonly Vector2 SCORE_LOCATION = new Vector2(725, 25);
+        public static readonly Vector2 LIVES_LOCATION = new Vector2(25, 25);
+    
     }
     
 }

@@ -49,6 +49,12 @@ namespace WordUp
 
         List<Letter> wordLetterList = new List<Letter>();
         
+        // Lives textures
+
+        Texture2D appleTexture;
+ 
+        List<Texture2D> livesList = new List<Texture2D>();
+
         // This is set in LoadContent()
         int letterWidth;
 
@@ -177,6 +183,17 @@ namespace WordUp
             }
             // Set the letter width 
             letterWidth = letterDictionary['a'][0].Width;
+
+
+            // Load lives texture
+
+            appleTexture = Content.Load<Texture2D>("apple");
+
+            // Three lives
+
+            livesList.Add(appleTexture);
+            livesList.Add(appleTexture);
+            livesList.Add(appleTexture);
 
             // Load word list
 
@@ -453,7 +470,14 @@ namespace WordUp
             // Draw score and health
 
             spriteBatch.DrawString(arialFont, score.ToString(), GameConstants.SCORE_LOCATION, Color.Red);
-     
+            
+            for(int i = 0; i < livesList.Count(); i++)
+            {
+                int xLoc = (int)GameConstants.LIVES_LOCATION.X + (livesList[i].Width * i);
+                int yLoc = (int)GameConstants.LIVES_LOCATION.Y;
+                Rectangle drawRectangle = new Rectangle(xLoc, yLoc, livesList[i].Width, livesList[i].Height);
+                spriteBatch.Draw(livesList[i], drawRectangle, Color.White);
+            }
 
             spriteBatch.End();
             base.Draw(gameTime);
