@@ -65,14 +65,19 @@ namespace WordUp
         bool backspaceDown = false;
         bool enterDown = false;
         bool offScreen = false;
-
+       
         // Random seed for the game
         Random rand = new Random();
         
         // Game score
         private int score;
 
+        // Sounds
 
+        SoundEffect keyPressSound;
+        SoundEffect wordSuccessSound;
+        SoundEffect lifeLostSound;
+        SoundEffect errorSound;
 
         public Game1()
         {
@@ -118,49 +123,14 @@ namespace WordUp
 
             arialFont = Content.Load<SpriteFont>("fonts\\Arial20");
 
+            // Load sounds
 
-            /*
-            // Load word list file
-            try
-            {
-                Stream wordComboStream = TitleContainer.OpenStream( "wordcombo.txt");
-                StreamReader stream = new StreamReader(wordComboStream);
-                string line;
-                
-                // Read letter combination file data
-                Debug.Write("Loading dictionary...");
-                while((line = stream.ReadLine()) != null)
-                {
-                    // Parse
-                    
-                    string[] colonSplit = line.Split(':');
+            keyPressSound = Content.Load<SoundEffect>("sounds\\keypress");
+            wordSuccessSound = Content.Load<SoundEffect>("sounds\\wordsuccess");
+            lifeLostSound = Content.Load<SoundEffect>("sounds\\lifelost");
+            // Source: http://freesound.org/people/Autistic%20Lucario/sounds/142608/
+            errorSound = Content.Load<SoundEffect>("sounds\\error");
 
-                    string wordCombo = colonSplit[0];
-                    string rightSide = colonSplit[1];
-
-                    string[] commaSplit = rightSide.Split(',');
-
-                    List<String> tmpWordList = new List<String>();
-
-       
-                    for(int i = 0; i < commaSplit.Length; i++)
-                    {
-                        tmpWordList.Add(commaSplit[i]);
-                    }
-                    wordComboDictionary.Add(wordCombo, tmpWordList);
-
-                    tmpWordList = null;
-                }
-
-                Debug.WriteLine("done.");
-                stream.Close();
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                // this will be thrown by OpenStream if gamedata.txt
-                // doesn't exist in the title storage location
-            }
-            */
             // Load letter textures
             List<Texture2D> textureList; 
 
@@ -184,12 +154,11 @@ namespace WordUp
             // Set the letter width 
             letterWidth = letterDictionary['a'][0].Width;
 
-
             // Load lives texture
 
             appleTexture = Content.Load<Texture2D>("apple");
 
-            // Three lives
+            // Add three lives to list
 
             livesList.Add(appleTexture);
             livesList.Add(appleTexture);
@@ -314,17 +283,16 @@ namespace WordUp
                 // Check whether the letter is one of the falling ones
                 if(currentWord.Contains(pressedChar.ToString()))
                 {
-                    
+
+                    keyPressSound.Play();
                     typedLetters.Add(pressedChar);
                 }
                 else
                 {
+                    errorSound.Play();
                     Debug.WriteLine("Current word: {0}", currentWord);
                     Debug.WriteLine("Current word doesn't have {0}", pressedChar);
-                }
-
-                
-               
+                }   
             }
             // User presses enter, check if word exists in dictionary
             if(typedLetters.Count > 0 && keyboard.IsKeyDown(Keys.Enter))
@@ -341,7 +309,7 @@ namespace WordUp
                 }
                 Debug.Write("Checking the following word: {0} ...", word);
 
-                // Check against dictionary - is typed word real?
+                // Check if word exists in dictionary
                 if(wordDictionary.ContainsKey(word))
                 {
                     Debug.WriteLine("found.");
@@ -350,9 +318,9 @@ namespace WordUp
                     // 2. Update score
                     score += ScoreTools.GetWordScore(word);
                     Debug.WriteLine("Total score: {0}", score);
+                    wordSuccessSound.Play();
                     // 3. Clear current letters
                     clearLetters();
-                    
                 }
                 else 
                 {
@@ -405,8 +373,7 @@ namespace WordUp
                 } 
            }
 
-            
-
+   
             foreach(Letter letter in wordLetterList)
             {
                 
@@ -422,6 +389,15 @@ namespace WordUp
             {
                 clearLetters();
                 offScreen = false;
+                
+               
+                // Life lost
+
+                if(livesList.Count > 0)
+                { 
+                    livesList.RemoveAt(livesList.Count - 1);
+                    lifeLostSound.Play();
+                }
             }
 
             base.Update(gameTime);
