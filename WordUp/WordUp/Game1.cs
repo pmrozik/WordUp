@@ -79,6 +79,8 @@ namespace WordUp
         private SoundEffect lifeLostSound;
         private SoundEffect errorSound;
 
+        private Song gameMusic; 
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -134,6 +136,10 @@ namespace WordUp
             wordDeleteSound = Content.Load<SoundEffect>("sounds\\worddelete");
             // Source also freesfx
             letterDeleteSound = Content.Load<SoundEffect>("sounds\\deleteletter");
+
+            // Load and play game music
+
+            gameMusic = Content.Load<Song>("sounds\\shiningstar");
 
             // Load letter textures
             List<Texture2D> textureList; 
@@ -200,7 +206,9 @@ namespace WordUp
             currentWord = GetRandomLetterCombo();
             stringToList(currentWord);
 
-            // TODO: use this.Content to load your game content here
+            // Play game music
+
+            MediaPlayer.Play(gameMusic);
         }
         private string ListToString()
         {
@@ -237,6 +245,7 @@ namespace WordUp
                 wordLetterList.Add(new Letter(c, xLoc, 0, tmpTexture, gameSpeed));
                 xLoc += tmpTexture.Width;
             }
+
             
         }
         private string GetRandomLetterCombo()
@@ -273,6 +282,7 @@ namespace WordUp
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+           
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
@@ -343,7 +353,7 @@ namespace WordUp
             {
                 backspaceDown = true;
             }
-            if(backspaceDown && (typedLetters.Count > 0))
+            if(backspaceDown && (typedLetters.Count > 0) && !shiftBackspaceDown)
             {
                 if(keyboard.IsKeyUp(Keys.Back))
                 {
