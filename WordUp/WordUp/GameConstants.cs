@@ -40,6 +40,10 @@ namespace WordUp
         // Font sizes in pixels
         public const int ARIAL20_PIXELS = 15;
 
+        // Number of lives
+
+        public const int NUM_LIVES = 3;
+
         // Score location
 
         public static readonly Vector2 SCORE_LOCATION = new Vector2(725, 25);

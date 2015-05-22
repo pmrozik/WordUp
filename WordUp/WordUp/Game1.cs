@@ -20,10 +20,11 @@ namespace WordUp
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        private GraphicsDeviceManager graphics;
+        private SpriteBatch spriteBatch;
         
-        String currentWord;
+        // The word that is currently falling
+        private String currentWord;
 
         // Game dashboard
         private Texture2D blackRectangleTexture;
@@ -31,53 +32,49 @@ namespace WordUp
         private bool rectangleDrawn = false;
 
         // Holds letters typed by user
-        List<char> typedLetters = new List<char>();
+        private List<char> typedLetters = new List<char>();
 
         // Fonts
-        SpriteFont arialFont;
+        private SpriteFont arialFont;
   
         // Allows letter graphics retrieval
-        Dictionary<char, List<Texture2D>> letterDictionary = new Dictionary<char, List<Texture2D>>();
-        
-        // Main word combo dictionary
-        Dictionary<string, List<string>> wordComboDictionary = new Dictionary<string, List<string>>();
+        private Dictionary<char, List<Texture2D>> letterDictionary = new Dictionary<char, List<Texture2D>>();
         
         // Word dictionary
-        Dictionary<string, bool> wordDictionary = new Dictionary<string, bool>();
+        private Dictionary<string, bool> wordDictionary = new Dictionary<string, bool>();
 
         // Contains each letter of the word
-
-        List<Letter> wordLetterList = new List<Letter>();
+        private List<Letter> wordLetterList = new List<Letter>();
         
-        // Lives textures
+        // Game lives textures
 
-        Texture2D appleTexture;
+        private Texture2D appleTexture;
  
-        List<Texture2D> livesList = new List<Texture2D>();
+        private List<Texture2D> livesList = new List<Texture2D>();
 
         // This is set in LoadContent()
-        int letterWidth;
+        private int letterWidth;
 
         // Initial game speed
-        GameSpeed gameSpeed = GameSpeed.VERY_SLOW;
+        private GameSpeed gameSpeed = GameSpeed.VERY_SLOW;
         
-        bool keyDownPressed = false;
-        bool backspaceDown = false;
-        bool enterDown = false;
-        bool offScreen = false;
+        private bool keyDownPressed = false;
+        private bool backspaceDown = false;
+        private bool enterDown = false;
+        private bool offScreen = false;
        
         // Random seed for the game
-        Random rand = new Random();
+        private Random rand = new Random();
         
         // Game score
         private int score;
 
         // Sounds
 
-        SoundEffect keyPressSound;
-        SoundEffect wordSuccessSound;
-        SoundEffect lifeLostSound;
-        SoundEffect errorSound;
+        private SoundEffect keyPressSound;
+        private SoundEffect wordSuccessSound;
+        private SoundEffect lifeLostSound;
+        private SoundEffect errorSound;
 
         public Game1()
         {
@@ -278,6 +275,7 @@ namespace WordUp
             // Allows user to enter words
 
             char pressedChar = KeyboardProcessor.GetLetter(keyboard);
+            
             if(pressedChar != ' ')
             {
                 // Check whether the letter is one of the falling ones
@@ -324,6 +322,10 @@ namespace WordUp
                 }
                 else 
                 {
+                    // Word not found in dictionary, play error sound
+                    errorSound.Play();
+                    // Clear typed letters 
+                    typedLetters.Clear();
                     Debug.WriteLine("not found.");
                 }
                 enterDown = false;

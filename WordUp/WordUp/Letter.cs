@@ -26,7 +26,7 @@ namespace WordUp
         
         private GameSpeed gameSpeed;
         private bool gameSpeedChanged;
-        Vector2 velocity;
+        private Vector2 velocity;
         
         // whether letter has gone off screen
         private bool offScreen;
