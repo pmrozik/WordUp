@@ -75,6 +75,7 @@ namespace WordUp
         private SoundEffect keyPressSound;
         private SoundEffect wordSuccessSound;
         private SoundEffect wordDeleteSound;
+        private SoundEffect letterDeleteSound;
         private SoundEffect lifeLostSound;
         private SoundEffect errorSound;
 
@@ -131,6 +132,8 @@ namespace WordUp
             errorSound = Content.Load<SoundEffect>("sounds\\error");
             // Source: http://www.freesfx.co.uk/download/?type=mp3&id=9630
             wordDeleteSound = Content.Load<SoundEffect>("sounds\\worddelete");
+            // Source also freesfx
+            letterDeleteSound = Content.Load<SoundEffect>("sounds\\deleteletter");
 
             // Load letter textures
             List<Texture2D> textureList; 
@@ -344,6 +347,7 @@ namespace WordUp
             {
                 if(keyboard.IsKeyUp(Keys.Back))
                 {
+                    letterDeleteSound.Play();
                     typedLetters.RemoveAt(typedLetters.Count - 1);
                     backspaceDown = false;
                 }
