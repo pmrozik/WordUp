@@ -74,6 +74,7 @@ namespace WordUp
 
         private SoundEffect keyPressSound;
         private SoundEffect wordSuccessSound;
+        private SoundEffect wordDeleteSound;
         private SoundEffect lifeLostSound;
         private SoundEffect errorSound;
 
@@ -128,6 +129,8 @@ namespace WordUp
             lifeLostSound = Content.Load<SoundEffect>("sounds\\lifelost");
             // Source: http://freesound.org/people/Autistic%20Lucario/sounds/142608/
             errorSound = Content.Load<SoundEffect>("sounds\\error");
+            // Source: http://www.freesfx.co.uk/download/?type=mp3&id=9630
+            wordDeleteSound = Content.Load<SoundEffect>("sounds\\worddelete");
 
             // Load letter textures
             List<Texture2D> textureList; 
@@ -355,13 +358,13 @@ namespace WordUp
             {
                 if(keyboard.IsKeyUp(Keys.Back) || keyboard.IsKeyUp(Keys.LeftShift))
                 {
+                    wordDeleteSound.Play();
                     typedLetters.Clear();
                     shiftBackspaceDown = false;
                 }
             }
 
 
-            
             // Allows user to change the speed of the game via keyboard
 
             if(keyboard.IsKeyDown(Keys.Up))
