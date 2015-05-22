@@ -60,6 +60,7 @@ namespace WordUp
         
         private bool keyDownPressed = false;
         private bool backspaceDown = false;
+        private bool shiftBackspaceDown = false;
         private bool enterDown = false;
         private bool offScreen = false;
        
@@ -331,19 +332,35 @@ namespace WordUp
                 enterDown = false;
             }
 
-            // Clear current letters with backspace
+            // Remove one letter with backspace
             if(keyboard.IsKeyDown(Keys.Back))
             {
                 backspaceDown = true;
             }
-            if(backspaceDown)
+            if(backspaceDown && (typedLetters.Count > 0))
             {
                 if(keyboard.IsKeyUp(Keys.Back))
                 {
-                    typedLetters.Clear();
+                    typedLetters.RemoveAt(typedLetters.Count - 1);
                     backspaceDown = false;
                 }
             }
+
+            // Left shift + backspace pressed to delete entire typed word
+            if(keyboard.IsKeyDown(Keys.LeftShift) && keyboard.IsKeyDown(Keys.Back))
+            {
+                shiftBackspaceDown = true;
+            }
+            if(shiftBackspaceDown && (typedLetters.Count > 0))
+            {
+                if(keyboard.IsKeyUp(Keys.Back) || keyboard.IsKeyUp(Keys.LeftShift))
+                {
+                    typedLetters.Clear();
+                    shiftBackspaceDown = false;
+                }
+            }
+
+
             
             // Allows user to change the speed of the game via keyboard
 
