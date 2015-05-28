@@ -365,25 +365,28 @@ namespace WordUp
         {
             GraphicsDevice.Clear(Color.DarkGray);
 
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+            
 
             switch (currentGameState)
             {
                 case GameState.MainMenu:
-                    spriteBatch.Draw(menuBackground, new Rectangle(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT), 
-                        Color.White);
-                    btnPlay.Draw(spriteBatch);
-                    btnOptions.Draw(spriteBatch);
-                    btnExit.Draw(spriteBatch);
+                        spriteBatch.Begin();
+                        spriteBatch.Draw(menuBackground, new Rectangle(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT),
+                            Color.White);
+                        btnPlay.Draw(spriteBatch);
+                        btnOptions.Draw(spriteBatch);
+                        btnExit.Draw(spriteBatch);
+                        spriteBatch.End();
                     break;
                 case GameState.Options:
                     break;
                 case GameState.Playing:
+                    spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
                     DrawPlay();
+                    spriteBatch.End();
                     break;
             }
-
-            spriteBatch.End();
+ 
             base.Draw(gameTime);
         }
         private void DrawPlay()
