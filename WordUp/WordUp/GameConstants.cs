@@ -18,6 +18,8 @@ namespace WordUp
      
         public const int WINDOW_HEIGHT = 600;
 
+        public static readonly Vector2 CENTER = new Vector2(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+
         // speed constants
 
         public const float VERY_SLOW = 0.1f;

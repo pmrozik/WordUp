@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System.IO;
+using System.Threading;
 using System.Diagnostics;
 
 namespace WordUp
@@ -22,7 +23,7 @@ namespace WordUp
     {
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
-
+        
         // Game states
 
         enum GameState
@@ -30,10 +31,14 @@ namespace WordUp
             MainMenu,
             Options,
             Playing,
+            GameOver
         }
 
         // Starting game state - menu
         GameState currentGameState = GameState.MainMenu;
+
+        // Finishing game transition
+        bool finishingGame = false;
 
         // Buttons for the menu
         cButton btnPlay;
@@ -98,6 +103,7 @@ namespace WordUp
         private SoundEffect letterDeleteSound;
         private SoundEffect lifeLostSound;
         private SoundEffect errorSound;
+        private SoundEffect gameOverSound;
 
         private Song gameMusic; 
 
@@ -138,8 +144,16 @@ namespace WordUp
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Load menu items
+            // Menu design thanks to: https://youtu.be/54L_w0PiRa8
+
+            // Source: http://pixshark.com/cool-black-backgrounds-for-powerpoint.htm
+            // Title: black history
             menuBackground = Content.Load<Texture2D>("menu\\background");
             
+
+            // All text buttons generated on cooltext.com
+            // Baskerville font
+
             btnPlay = new cButton(Content.Load<Texture2D>("menu\\play"), graphics.GraphicsDevice);
             btnPlay.setPosition(new Vector2(350, 250));
             
@@ -171,6 +185,9 @@ namespace WordUp
             wordDeleteSound = Content.Load<SoundEffect>("sounds\\worddelete");
             // Source also freesfx
             letterDeleteSound = Content.Load<SoundEffect>("sounds\\deleteletter");
+            // Source: http://www.freesound.org/people/themusicalnomad/sounds/253886/
+            gameOverSound = Content.Load<SoundEffect>("sounds\\gameover");
+
 
             // Load and play game music
 
@@ -206,8 +223,8 @@ namespace WordUp
             // Add three lives to list
 
             livesList.Add(appleTexture);
-            livesList.Add(appleTexture);
-            livesList.Add(appleTexture);
+            // livesList.Add(appleTexture);
+            // livesList.Add(appleTexture);
 
             // Load word list
 
@@ -339,12 +356,10 @@ namespace WordUp
                     IsMouseVisible = false;
                     Play(gameTime);
                     break;
+                case GameState.GameOver:
+                    MediaPlayer.Stop();
+                    break;
             }
-
-
-
-
-            
 
             base.Update(gameTime);
         }
@@ -363,9 +378,7 @@ namespace WordUp
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.DarkGray);
-
-            
+            GraphicsDevice.Clear(Color.Gray);
 
             switch (currentGameState)
             {
@@ -385,193 +398,218 @@ namespace WordUp
                     DrawPlay();
                     spriteBatch.End();
                     break;
+                case GameState.GameOver:
+                    spriteBatch.Begin();
+                    DrawGameOver();
+                    spriteBatch.End();
+                    break;
             }
  
             base.Draw(gameTime);
         }
-        private void DrawPlay()
+        private void DrawGameOver()
         {
-            // Draw game dashboard
+            gameOverSound.Play();
+            Vector2 stringSize = arialFont.MeasureString("GAME OVER");
+            Vector2 gameOverLocation = GameConstants.CENTER - new Vector2(stringSize.X / 2, stringSize.Y / 2); 
+            spriteBatch.DrawString(arialFont, "GAME OVER", gameOverLocation, Color.MistyRose);
+            Thread.Sleep(2000);
+        }
+        private void DrawPlay()
+        { 
+               
+                // Draw game dashboard
 
-            // Draw rectangle only once
-            if (!rectangleDrawn)
-            {
-                spriteBatch.Draw(blackRectangleTexture, blackRectangle, null,
-                                             Color.Navy, 0.0f, Vector2.Zero, SpriteEffects.None, 0.5f);
-            }
+                // Draw rectangle only once
+                if (!rectangleDrawn)
+                {
+                    spriteBatch.Draw(blackRectangleTexture, blackRectangle, null,
+                                                 Color.Navy, 0.0f, Vector2.Zero, SpriteEffects.None, 0.5f);
+                }
 
-            // Draw typed letters
+                // Draw typed letters
 
-            int typedLettersXLoc = (GameConstants.WINDOW_WIDTH - typedLetters.Count * GameConstants.ARIAL20_PIXELS) / 2;
-            spriteBatch.DrawString(arialFont, ListToString(), new Vector2(typedLettersXLoc, 550), Color.Yellow);
+                int typedLettersXLoc = (GameConstants.WINDOW_WIDTH - typedLetters.Count * GameConstants.ARIAL20_PIXELS) / 2;
+                spriteBatch.DrawString(arialFont, ListToString(), new Vector2(typedLettersXLoc, 550), Color.Yellow);
 
 
-            // Draw falling letters
-            foreach (Letter letter in wordLetterList)
-            {
-                letter.Draw(spriteBatch);
-            }
+                // Draw falling letters
+                foreach (Letter letter in wordLetterList)
+                {
+                    letter.Draw(spriteBatch);
+                }
 
-            // Draw score and health
+                // Draw score and health
 
-            spriteBatch.DrawString(arialFont, score.ToString(), GameConstants.SCORE_LOCATION, Color.Red);
+                spriteBatch.DrawString(arialFont, score.ToString(), GameConstants.SCORE_LOCATION, Color.Red);
 
-            for (int i = 0; i < livesList.Count(); i++)
-            {
-                int xLoc = (int)GameConstants.LIVES_LOCATION.X + (livesList[i].Width * i);
-                int yLoc = (int)GameConstants.LIVES_LOCATION.Y;
-                Rectangle drawRectangle = new Rectangle(xLoc, yLoc, livesList[i].Width, livesList[i].Height);
-                spriteBatch.Draw(livesList[i], drawRectangle, Color.White);
-            }
+                for (int i = 0; i < livesList.Count(); i++)
+                {
+                    int xLoc = (int)GameConstants.LIVES_LOCATION.X + (livesList[i].Width * i);
+                    int yLoc = (int)GameConstants.LIVES_LOCATION.Y;
+                    Rectangle drawRectangle = new Rectangle(xLoc, yLoc, livesList[i].Width, livesList[i].Height);
+                    spriteBatch.Draw(livesList[i], drawRectangle, Color.White);
+                }      
         }
         private void Play(GameTime gameTime)
         {
-            // Allows user to enter words
-            KeyboardState keyboard = Keyboard.GetState();
-            char pressedChar = KeyboardProcessor.GetLetter(keyboard);
+                // Allows user to enter words
+                KeyboardState keyboard = Keyboard.GetState();
+                char pressedChar = KeyboardProcessor.GetLetter(keyboard);
 
-            if (pressedChar != ' ')
-            {
-                // Check whether the letter is one of the falling ones
-                if (currentWord.Contains(pressedChar.ToString()))
+                if (pressedChar != ' ')
                 {
-
-                    keyPressSound.Play();
-                    typedLetters.Add(pressedChar);
-                }
-                else
-                {
-                    errorSound.Play();
-                    Debug.WriteLine("Current word: {0}", currentWord);
-                    Debug.WriteLine("Current word doesn't have {0}", pressedChar);
-                }
-            }
-            // User presses enter, check if word exists in dictionary
-            if (typedLetters.Count > 0 && keyboard.IsKeyDown(Keys.Enter))
-            {
-                enterDown = true;
-            }
-            if (enterDown && keyboard.IsKeyUp(Keys.Enter))
-            {
-                string word = "";
-
-                foreach (char c in typedLetters)
-                {
-                    word += c;
-                }
-                Debug.Write("Checking the following word: {0} ...", word);
-
-                // Check if word exists in dictionary
-                if (wordDictionary.ContainsKey(word))
-                {
-                    Debug.WriteLine("found.");
-                    // 1. Remove word from word dictionary
-                    wordDictionary.Remove(word);
-                    // 2. Update score
-                    score += ScoreTools.GetWordScore(word);
-                    Debug.WriteLine("Total score: {0}", score);
-                    wordSuccessSound.Play();
-                    // 3. Clear current letters
-                    clearLetters();
-                }
-                else
-                {
-                    // Word not found in dictionary, play error sound
-                    errorSound.Play();
-                    // Clear typed letters 
-                    typedLetters.Clear();
-                    Debug.WriteLine("not found.");
-                }
-                enterDown = false;
-            }
-
-            // Remove one letter with backspace
-            if (keyboard.IsKeyDown(Keys.Back))
-            {
-                backspaceDown = true;
-            }
-            if (backspaceDown && (typedLetters.Count > 0) && !shiftBackspaceDown)
-            {
-                if (keyboard.IsKeyUp(Keys.Back))
-                {
-                    letterDeleteSound.Play();
-                    typedLetters.RemoveAt(typedLetters.Count - 1);
-                    backspaceDown = false;
-                }
-            }
-
-            // Left shift + backspace pressed to delete entire typed word
-            if (keyboard.IsKeyDown(Keys.LeftShift) && keyboard.IsKeyDown(Keys.Back))
-            {
-                shiftBackspaceDown = true;
-            }
-            if (shiftBackspaceDown && (typedLetters.Count > 0))
-            {
-                if (keyboard.IsKeyUp(Keys.Back) || keyboard.IsKeyUp(Keys.LeftShift))
-                {
-                    wordDeleteSound.Play();
-                    typedLetters.Clear();
-                    shiftBackspaceDown = false;
-                }
-            }
-
-
-            // Allows user to change the speed of the game via keyboard
-
-            if (keyboard.IsKeyDown(Keys.Up))
-            {
-                keyDownPressed = true;
-            }
-
-            if (keyDownPressed == true)
-            {
-
-                if (keyboard.IsKeyUp(Keys.Up))
-                {
-                    if (gameSpeed != GameSpeed.ULTRA_FAST)
+                    // Check whether the letter is one of the falling ones
+                    if (currentWord.Contains(pressedChar.ToString()))
                     {
-                        gameSpeed++;
+
+                        keyPressSound.Play();
+                        typedLetters.Add(pressedChar);
                     }
                     else
                     {
-                        gameSpeed = GameSpeed.VERY_SLOW;
+                        errorSound.Play();
+                        Debug.WriteLine("Current word: {0}", currentWord);
+                        Debug.WriteLine("Current word doesn't have {0}", pressedChar);
                     }
+                }
+                // User presses enter, check if word exists in dictionary
+                if (typedLetters.Count > 0 && keyboard.IsKeyDown(Keys.Enter))
+                {
+                    enterDown = true;
+                }
+                if (enterDown && keyboard.IsKeyUp(Keys.Enter))
+                {
+                    string word = "";
 
-                    foreach (Letter letter in wordLetterList)
+                    foreach (char c in typedLetters)
                     {
-                        letter.Speed = gameSpeed;
+                        word += c;
                     }
-                    keyDownPressed = false;
-                    Debug.WriteLine("Game speed changed to " + gameSpeed.ToString());
+                    Debug.Write("Checking the following word: {0} ...", word);
+
+                    // Check if word exists in dictionary
+                    if (wordDictionary.ContainsKey(word))
+                    {
+                        Debug.WriteLine("found.");
+                        // 1. Remove word from word dictionary
+                        wordDictionary.Remove(word);
+                        // 2. Update score
+                        score += ScoreTools.GetWordScore(word);
+                        Debug.WriteLine("Total score: {0}", score);
+                        wordSuccessSound.Play();
+                        // 3. Clear current letters
+                        clearLetters();
+                    }
+                    else
+                    {
+                        // Word not found in dictionary, play error sound
+                        errorSound.Play();
+                        // Clear typed letters 
+                        typedLetters.Clear();
+                        Debug.WriteLine("not found.");
+                    }
+                    enterDown = false;
                 }
-            }
 
-
-            foreach (Letter letter in wordLetterList)
-            {
-
-                if (letter.OffScreen)
+                // Remove one letter with backspace
+                if (keyboard.IsKeyDown(Keys.Back))
                 {
-                    offScreen = true;
+                    backspaceDown = true;
                 }
-                letter.Update(gameTime);
-            }
-
-            // Check if letters have gone off screen
-            if (offScreen)
-            {
-                clearLetters();
-                offScreen = false;
-
-
-                // Life lost
-
-                if (livesList.Count > 0)
+                if (backspaceDown && (typedLetters.Count > 0) && !shiftBackspaceDown)
                 {
-                    livesList.RemoveAt(livesList.Count - 1);
-                    lifeLostSound.Play();
+                    if (keyboard.IsKeyUp(Keys.Back))
+                    {
+                        letterDeleteSound.Play();
+                        typedLetters.RemoveAt(typedLetters.Count - 1);
+                        backspaceDown = false;
+                    }
                 }
-            }
+
+                // Left shift + backspace pressed to delete entire typed word
+                if (keyboard.IsKeyDown(Keys.LeftShift) && keyboard.IsKeyDown(Keys.Back))
+                {
+                    shiftBackspaceDown = true;
+                }
+                if (shiftBackspaceDown && (typedLetters.Count > 0))
+                {
+                    if (keyboard.IsKeyUp(Keys.Back) || keyboard.IsKeyUp(Keys.LeftShift))
+                    {
+                        wordDeleteSound.Play();
+                        typedLetters.Clear();
+                        shiftBackspaceDown = false;
+                    }
+                }
+
+
+                // Allows user to change the speed of the game via keyboard
+
+                if (keyboard.IsKeyDown(Keys.Up))
+                {
+                    keyDownPressed = true;
+                }
+
+                if (keyDownPressed == true)
+                {
+
+                    if (keyboard.IsKeyUp(Keys.Up))
+                    {
+                        if (gameSpeed != GameSpeed.ULTRA_FAST)
+                        {
+                            gameSpeed++;
+
+                        }
+                        else
+                        {
+                            gameSpeed = GameSpeed.VERY_SLOW;
+                        }
+
+                        foreach (Letter letter in wordLetterList)
+                        {
+                            letter.Speed = gameSpeed;
+                        }
+                        keyDownPressed = false;
+                        Debug.WriteLine("Game speed changed to " + gameSpeed.ToString());
+                    }
+                }
+
+
+                foreach (Letter letter in wordLetterList)
+                {
+
+                    if (letter.OffScreen)
+                    {
+                        offScreen = true;
+                    }
+                    letter.Update(gameTime);
+                }
+
+                // Check if letters have gone off screen
+                if (offScreen)
+                {
+                    clearLetters();
+                    offScreen = false;
+
+
+                    // Life lost
+
+                    if (livesList.Count > 0)
+                    {
+                        livesList.RemoveAt(livesList.Count - 1);
+                        lifeLostSound.Play();
+                    }
+                    // All lives lost, game over
+                    else
+                    {
+                        currentGameState = GameState.GameOver;
+                    }
+              }
+        }
+        
+        private void GameOver(GameTime gameTime)
+        {
+
         }
         // change the game speed
         private void ChangeSpeed(GameSpeed speed)
