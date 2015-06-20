@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Media;
 using System.IO;
 using System.Threading;
 using System.Diagnostics;
+using System.Text;
 
 namespace WordUp
 {
@@ -31,14 +32,12 @@ namespace WordUp
             MainMenu,
             Options,
             Playing,
-            GameOver
+            GameOver,
+            EnterName
         }
 
         // Starting game state - menu
         GameState currentGameState = GameState.MainMenu;
-
-        // Finishing game transition
-        bool finishingGame = false;
 
         // Buttons for the menu
         cButton btnPlay;
@@ -58,6 +57,10 @@ namespace WordUp
 
         // Holds letters typed by user
         private List<char> typedLetters = new List<char>();
+        
+        // Holds name typed by user
+
+        private StringBuilder userName = new StringBuilder(50);
 
         // Fonts
         private SpriteFont arialFont;
@@ -106,6 +109,12 @@ namespace WordUp
         private SoundEffect gameOverSound;
 
         private Song gameMusic; 
+
+        // Stores time for transition from GameOver to EnterName
+
+        double gameOverTime;
+        bool gameOverEntered = false;
+
 
         public Game1()
         {
@@ -359,6 +368,9 @@ namespace WordUp
                 case GameState.GameOver:
                     MediaPlayer.Stop();
                     break;
+                case GameState.EnterName:
+                    UpdateEnterName(gameTime);
+                    break;
             }
 
             base.Update(gameTime);
@@ -399,21 +411,42 @@ namespace WordUp
                     spriteBatch.End();
                     break;
                 case GameState.GameOver:
+                    if(gameOverEntered)
+                    { 
+                        // Wait x milliseconds before moving to the next Game State
+                        if(gameTime.TotalGameTime.TotalMilliseconds - gameOverTime <= 3000)
+                        {
+                            spriteBatch.Begin();
+                            DrawGameOver();
+                            spriteBatch.End();
+                        }
+                        else
+                        {
+                            currentGameState = GameState.EnterName;
+                        }
+                    }
+                    else
+                    {
+                        gameOverEntered = true;
+                        gameOverSound.Play();
+                        gameOverTime = gameTime.TotalGameTime.TotalMilliseconds;
+                    }
+                    break;
+                case GameState.EnterName:
                     spriteBatch.Begin();
-                    DrawGameOver();
+                    DrawEnterName();
                     spriteBatch.End();
                     break;
             }
  
             base.Draw(gameTime);
         }
+      
         private void DrawGameOver()
         {
-            gameOverSound.Play();
             Vector2 stringSize = arialFont.MeasureString("GAME OVER");
             Vector2 gameOverLocation = GameConstants.CENTER - new Vector2(stringSize.X / 2, stringSize.Y / 2); 
-            spriteBatch.DrawString(arialFont, "GAME OVER", gameOverLocation, Color.MistyRose);
-            Thread.Sleep(2000);
+            spriteBatch.DrawString(arialFont, "GAME OVER", gameOverLocation, Color.Black);
         }
         private void DrawPlay()
         { 
@@ -451,6 +484,51 @@ namespace WordUp
                     spriteBatch.Draw(livesList[i], drawRectangle, Color.White);
                 }      
         }
+        private void UpdateEnterName(GameTime gameTime)
+        {
+            // Allows user to enter words
+            KeyboardState keyboard = Keyboard.GetState();
+            char pressedChar = KeyboardProcessor.GetLetter(keyboard);
+
+            if(pressedChar != ' ')
+            { 
+                userName.Append(pressedChar);
+            }
+            
+            // Remove one letter with backspace
+            if (keyboard.IsKeyDown(Keys.Back))
+            {
+                backspaceDown = true;
+            }
+            if (backspaceDown)
+            {
+                if (keyboard.IsKeyUp(Keys.Back))
+                {
+                    if(userName.Length > 0)
+                    { 
+                    userName.Remove(userName.Length - 1, 1);
+                    backspaceDown = false;
+                    }
+                }
+            }
+        }
+        private void DrawEnterName()
+        {
+            string enterYourName = "Enter your name: ";
+            Vector2 stringSize = arialFont.MeasureString(enterYourName);
+            Vector2 enterNameStringLocation = GameConstants.CENTER - new Vector2(stringSize.X / 2, stringSize.Y / 2);
+            spriteBatch.DrawString(arialFont, "Enter your name: ", enterNameStringLocation, Color.Black);
+
+            Vector2 userNameStringSize = arialFont.MeasureString(userName);
+            Vector2 userNameStringLocation = GameConstants.CENTER - new Vector2(userNameStringSize.X / 2, userNameStringSize.Y /2 ) 
+                + new Vector2(0, 50);
+
+            spriteBatch.DrawString(arialFont, userName, userNameStringLocation , Color.Black);
+
+           
+
+        }
+     
         private void Play(GameTime gameTime)
         {
                 // Allows user to enter words
